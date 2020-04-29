@@ -1,4 +1,8 @@
-﻿using System.Data.Entity;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Data.Entity;
+using System.Net.NetworkInformation;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
@@ -16,12 +20,16 @@ namespace SpringBlog.Models
             // Add custom user claims here
             return userIdentity;
         }
+        [MaxLength(30)]
+        public string DisplayName { get; set; }
+
+        public virtual ICollection<Post> Posts { get; set; }
     }
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext()
-            : base("DefaultConnection", throwIfV1Schema: false)
+            : base("ApplicationDbContex", throwIfV1Schema: false)
         {
         }
 
@@ -29,5 +37,20 @@ namespace SpringBlog.Models
         {
             return new ApplicationDbContext();
         }
+
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            //fluentApi ile Cascade Deleteyi kapattık
+            modelBuilder.Entity<Post>()
+                .HasRequired(x => x.Category)
+                .WithMany(x => x.Posts)
+                .HasForeignKey(x => x.CategoryId)
+                .WillCascadeOnDelete(false);
+
+            base.OnModelCreating(modelBuilder);
+        }
+
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Post> Posts { get; set; }
     }
 }
