@@ -1,46 +1,67 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@*https://startbootstrap.com/templates/blog-home/*@
+<!DOCTYPE html>
+<html lang="en" class="h-100">
 
 <head>
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="A Blog Website">
+    <meta name="description" content="My Blog Site">
     <meta name="author" content="Burak TÜRKÖZEN">
 
     <title>Spring Blog - @ViewBag.Title</title>
 
-    <!-- Bootstrap core CSS -->
-
-    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
-
-    <!-- Custom styles for this template -->
-
+    @Styles.Render("~/Content/bootstrap")
+    @Styles.Render("~/Content/croppie")
+    @Styles.Render("~/Content/fontawesome")
     @Styles.Render("~/Content/css")
-
 
 </head>
 
-<body>
+<body class="d-flex flex-column h-100">
 
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="#">SpringBlog</a>
+            @Html.RouteLink("SpringBlog", "HomeDefault", null, new { @class = "navbar-brand" })
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarResponsive">
                 <ul class="navbar-nav ml-auto">
-                    <li class="nav-item ">
-                        @Html.ActionLink("Home", "Index", "Home", null, new { @class = "nav-link" })
+                    <li class="nav-item">
+                        @Html.RouteLink("Home", "HomeDefault", null, new { @class = "nav-link" })
                     </li>
-                    <li class="nav-item ">
+                    <li class="nav-item">
                         @Html.ActionLink("About", "About", "Home", null, new { @class = "nav-link" })
                     </li>
-                    <li class="nav-item ">
+                    <li class="nav-item">
                         @Html.ActionLink("Contact", "Contact", "Home", null, new { @class = "nav-link" })
                     </li>
+                </ul>
+
+                @Html.Partial("_LoginPartial")
+
+                <ul class="navbar-nav">
+                    @if (User.IsInRole("admin"))
+                    {
+                        <li class="nav-item d-lg-none">
+                            @Html.ActionLink("Administration", "Index", "Dashboard", new { area = "Admin" }, new { @class = "nav-link" })
+                        </li>
+                        <li class="nav-item dropdown d-none d-lg-block ml-1">
+                            <div class="btn-group">
+                                @Html.ActionLink("Administration", "Index", "Dashboard", new { area = "Admin" }, new { @class = "btn btn-secondary" })
+                                <a href="#" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                </a>
+                                <div class="dropdown-menu">
+                                    @Html.ActionLink("Categories", "Index", "Categories", new { area = "Admin" }, new { @class = "dropdown-item" })
+                                    @Html.ActionLink("Posts", "Index", "Posts", new { area = "Admin" }, new { @class = "dropdown-item" })
+                                    @Html.ActionLink("Comments", "Index", "Comments", new { area = "Admin" }, new { @class = "dropdown-item" })
+                                </div>
+                            </div>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
@@ -52,8 +73,10 @@
         <div class="row">
 
             <!-- Blog Entries Column -->
-            <div class="col-md-8">
+            <div class="col-md-8 py-4 d-flex flex-column">
+
                 @RenderBody()
+
             </div>
 
             <!-- Sidebar Widgets Column -->
@@ -63,12 +86,15 @@
                 <div class="card my-4">
                     <h5 class="card-header">Search</h5>
                     <div class="card-body">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Search for...">
-                            <span class="input-group-btn">
-                                <button class="btn btn-secondary" type="button">Go!</button>
-                            </span>
-                        </div>
+                        @using (Html.BeginForm("Index", "Home", FormMethod.Get, new { id = "frmSearch" }))
+                        {
+                            <div class="input-group">
+                                @Html.TextBox("q", null, new { @class = "form-control", placeholder = "Search for..." })
+                                <span class="input-group-append">
+                                    <button class="btn btn-secondary" type="submit">Go!</button>
+                                </span>
+                            </div>
+                        }
                     </div>
                 </div>
 
@@ -78,7 +104,7 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col">
-                                @Html.Action("CategoriesPartial", "Home")
+                                @Html.Action("CategoriesPartial", "Home", new { area = "" })
                             </div>
                         </div>
                     </div>
@@ -100,19 +126,20 @@
     </div>
     <!-- /.container -->
     <!-- Footer -->
-    <footer class="py-5 bg-dark">
+    <footer class="py-5 bg-dark mt-auto">
         <div class="container">
-            <p class="m-0 text-center text-white">Copyright &copy; Spring Blog 2019</p>
+            <p class="m-0 text-center text-white">Copyright &copy; SpringBlog 2020</p>
         </div>
         <!-- /.container -->
     </footer>
 
-    <!-- Bootstrap core JavaScript -->
-
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
-
+    @Scripts.Render("~/bundles/bs-custom-file-input")
+    @Scripts.Render("~/bundles/croppie")
+    @Scripts.Render("~/bundles/site")
     @RenderSection("scripts", false)
+
 </body>
 
 </html>

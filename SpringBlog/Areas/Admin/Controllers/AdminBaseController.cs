@@ -7,6 +7,7 @@ using System.Web.Mvc;
 
 namespace SpringBlog.Areas.Admin.Controllers
 {
+    [Authorize(Roles = "admin")]
     public class AdminBaseController : Controller
     {
         protected ApplicationDbContext db = new ApplicationDbContext();
@@ -17,6 +18,7 @@ namespace SpringBlog.Areas.Admin.Controllers
             {
                 db.Dispose();
             }
+
             base.Dispose(disposing);
         }
     }

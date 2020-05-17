@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
-using System.Net.NetworkInformation;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
@@ -21,16 +20,23 @@ namespace SpringBlog.Models
             userIdentity.AddClaim(new Claim("DisplayName", DisplayName));
             return userIdentity;
         }
-        [MaxLength(30)]
+
+        [Required]
+        [StringLength(30)]
         public string DisplayName { get; set; }
 
+        [StringLength(100)]
+        public string ProfilePhoto { get; set; }
+
+
         public virtual ICollection<Post> Posts { get; set; }
+        public virtual ICollection<Comment> Comments { get; set; }
     }
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext()
-            : base("ApplicationDbContex", throwIfV1Schema: false)
+            : base("ApplicationDbContext", throwIfV1Schema: false)
         {
         }
 
@@ -41,11 +47,19 @@ namespace SpringBlog.Models
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            //fluentApi ile Cascade Deleteyi kapattık
             modelBuilder.Entity<Post>()
                 .HasRequired(x => x.Category)
                 .WithMany(x => x.Posts)
                 .HasForeignKey(x => x.CategoryId)
+                .WillCascadeOnDelete(false);
+
+            // yazar silinince postları, postları silinince yorumları zaten silineceği için
+            // yazarı silince doğrudan yorumlarını sildirmeye gerek yok
+            // aksi takdirde birden çok cascade path'i (yolu) oluşarak hataya sebebiyet veriyor
+            modelBuilder.Entity<Comment>()
+                .HasRequired(x => x.Author)
+                .WithMany(x => x.Comments)
+                .HasForeignKey(x => x.AuthorId)
                 .WillCascadeOnDelete(false);
 
             base.OnModelCreating(modelBuilder);
@@ -53,5 +67,6 @@ namespace SpringBlog.Models
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<Post> Posts { get; set; }
+        public DbSet<Comment> Comments { get; set; }
     }
 }

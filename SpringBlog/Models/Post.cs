@@ -11,30 +11,34 @@ namespace SpringBlog.Models
     {
         public int Id { get; set; }
 
-        [Required, ForeignKey("Author")]
+        [Required]
+        [ForeignKey("Author")]
         public string AuthorId { get; set; }
 
         public int CategoryId { get; set; }
 
-        [Required, MaxLength(200)]
+        [Required]
+        [StringLength(200)]
         public string Title { get; set; }
 
         public string Content { get; set; }
 
         public string PhotoPath { get; set; }
 
-        [Required, MaxLength(200)]
+        [Required]
+        [StringLength(200)]
         public string Slug { get; set; }
 
         [Required]
-        public DateTime? CreateTime { get; set; }
+        public DateTime? CreationTime { get; set; }
 
         [Required]
         public DateTime? ModificationTime { get; set; }
 
-        public virtual ApplicationUser Author { get; set; }
 
+        public virtual ApplicationUser Author { get; set; }
         public virtual Category Category { get; set; }
 
+        public virtual ICollection<Comment> Comments { get; set; }
     }
 }

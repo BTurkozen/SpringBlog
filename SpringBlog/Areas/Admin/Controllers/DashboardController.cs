@@ -1,4 +1,4 @@
-﻿using SpringBlog.ViewModels;
+﻿using SpringBlog.Areas.Admin.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,14 +12,13 @@ namespace SpringBlog.Areas.Admin.Controllers
         // GET: Admin/Dashboard
         public ActionResult Index()
         {
-            var vm = new DashBoardViewModel
+            var vm = new DashboardViewModel
             {
                 CategoryCount = db.Categories.Count(),
                 PostCount = db.Posts.Count(),
                 UserCount = db.Users.Count(),
-                AdminCount = db.Roles.FirstOrDefault(x => x.Name == "Admin").Users.Count()
+                CommentCount = db.Comments.Count()
             };
-
             return View(vm);
         }
     }

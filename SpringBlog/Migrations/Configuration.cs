@@ -18,61 +18,38 @@ namespace SpringBlog.Migrations
 
         protected override void Seed(SpringBlog.Models.ApplicationDbContext context)
         {
-            // https://stackoverflow.com/questions/19280527/mvc-5-seed-users-and-roles
-            if (!context.Roles.Any(r => r.Name == "Admin"))
+            #region Add Extra Posts
+            if (!context.Categories.Any(x => x.CategoryName == "Generated Posts") && context.Users.Any())
             {
-                var store = new RoleStore<IdentityRole>(context);
-                var manager = new RoleManager<IdentityRole>(store);
-                var role = new IdentityRole { Name = "Admin" };
+                var userId = context.Users.First().Id;
+                context.Categories.Add(new Category
+                {
+                    CategoryName = "Generated Posts",
+                    Slug = "generated-posts",
+                    Posts = GeneratePosts(userId)
+                });
+            }
+            #endregion
+        }
 
-                manager.Create(role);
+        private List<Post> GeneratePosts(string userId, int count = 100)
+        {
+            var posts = new List<Post>();
+
+            for (int i = 0; i < count; i++)
+            {
+                posts.Add(new Post
+                {
+                    Title = "Generated Post " + (i + 1),
+                    AuthorId = userId,
+                    Content = "<p>Tincidunt integer eu augue augue nunc elit dolor, luctus placerat scelerisque euismod, iaculis eu lacus nunc mi elit, vehicula ut laoreet ac, aliquam sit amet justo nunc tempor, metus vel.</p>",
+                    Slug = "generated-post-" + (i + 1),
+                    CreationTime = DateTime.Now,
+                    ModificationTime = DateTime.Now
+                });
             }
 
-            if (!context.Users.Any(u => u.UserName == "bk@turkozen.com"))
-            {
-                var store = new UserStore<ApplicationUser>(context);
-                var manager = new UserManager<ApplicationUser>(store);
-                var user = new ApplicationUser
-                {
-                    UserName = "bk@turkozen.com",
-                    Email = "bk@turkozen.com",
-                    DisplayName = "BTurkozen",
-                    EmailConfirmed = true
-                };
-
-                manager.Create(user, "123Pass");
-                manager.AddToRole(user.Id, "Admin");
-
-                #region Seed Categories and Posts
-                if (!context.Categories.Any())
-                {
-                    context.Categories.Add(new Category
-                    {
-                        CategoryName = "Sample Category 1 ",
-                        Posts = new List<Post> {
-                            new Post {
-                        Title = "Sapmle Post 1",
-                        AuthorId = user.Id,
-                        Content = "<p> In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content</p>",
-                        Slug = "sample-post-1",
-                        CreateTime = DateTime.Now, // site amerikada ise oranýn saatlerýný gýrecegýz.
-                        ModificationTime = DateTime.Now
-                    },
-
-                        new Post
-                        {
-                            Title = "Sapmle Post 2",
-                            AuthorId = user.Id,
-                            Content = "<p> In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content</p>",
-                            Slug = "sample-post-2",
-                            CreateTime = DateTime.Now, // site amerikada ise oranýn saatlerýný gýrecegýz.
-                            ModificationTime = DateTime.Now
-                        }
-                        }
-                    });
-                }
-                #endregion
-            }
+            return posts;
         }
     }
 }

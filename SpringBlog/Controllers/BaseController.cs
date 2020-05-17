@@ -9,7 +9,6 @@ namespace SpringBlog.Controllers
 {
     public class BaseController : Controller
     {
-        // GET: Base
         protected ApplicationDbContext db = new ApplicationDbContext();
 
         protected override void Dispose(bool disposing)
@@ -18,6 +17,7 @@ namespace SpringBlog.Controllers
             {
                 db.Dispose();
             }
+
             base.Dispose(disposing);
         }
     }

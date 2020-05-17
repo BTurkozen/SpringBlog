@@ -1,4 +1,4 @@
-﻿@model DashBoardViewModel
+﻿@model DashboardViewModel
 @{
     ViewBag.Title = "Dashboard";
 }
@@ -15,11 +15,11 @@
         </div>
         <!-- ./col -->
         <div class="col-lg-3 col-6">
-            @SmallBox(Model.UserCount.ToString(), "Users", "#", "bg-warning", "fas fa-users")
+            @SmallBox(Model.CommentCount.ToString(), "Comments", Url.Action("Index", "Comments"), "bg-light", "fas fa-comments")
         </div>
         <!-- ./col -->
         <div class="col-lg-3 col-6">
-            @SmallBox(Model.AdminCount.ToString(), "Admins", "#", "bg-danger", "fas fa-user-secret")
+            @SmallBox(Model.UserCount.ToString(), "Users", "#", "bg-warning", "fas fa-users")
         </div>
         <!-- ./col -->
     </div>
@@ -41,5 +41,4 @@
         <a href="@link" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
     </div>
 }
-
 

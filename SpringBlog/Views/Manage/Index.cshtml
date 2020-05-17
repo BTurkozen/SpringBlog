@@ -9,6 +9,23 @@
 <div>
     <h4>Change your account settings</h4>
     <hr />
+
+    <div class="float-right position-relative">
+
+        <div class="dropdown mt-1 position-absolute" style="bottom: 3px; right: 3px;">
+            <button class="btn btn-light btn-sm" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-pencil-alt"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item small" href="#" data-toggle="modal" data-target="#modalChangePhoto">Change Photo</a>
+                <a class="dropdown-item small" href="#" id="btnDeletePhoto">Delete</a>
+            </div>
+        </div>
+
+        <img id="profilePhoto" class="rounded" src="@Url.LoggedInProfilePhoto()" alt="profile photo" width="150" /> <br />
+
+    </div>
+
     <dl class="dl-horizontal">
         <dt>Password:</dt>
         <dd>
@@ -30,13 +47,13 @@
         </dd>
         @*
             Phone Numbers can used as a second factor of verification in a two-factor authentication system.
-             
+
              See <a href="https://go.microsoft.com/fwlink/?LinkId=403804">this article</a>
                 for details on setting up this ASP.NET application to support two-factor authentication using SMS.
-             
+
              Uncomment the following block after you have set up two-factor authentication
         *@
-        @*  
+        @*
             <dt>Phone Number:</dt>
             <dd>
                 @(Model.PhoneNumber ?? "None")
@@ -85,3 +102,115 @@
         </dd>
     </dl>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalChangePhoto" tabindex="-1" role="dialog" aria-labelledby="modalChangePhotoTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalChangePhotoTitle">Choose a Profile Photo</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="custom-file mb-3">
+                    <input type="file" class="custom-file-input" id="file-input">
+                    <label class="custom-file-label" for="customFile" data-browse="Browse">Choose file</label>
+                </div>
+
+                <div class="cropper-wrapper">
+                    <div class="cropper"></div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="btnUpload" type="button" class="btn btn-primary" disabled>Crop &amp; Upload</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+
+    <script>
+        // https://foliotek.github.io/Croppie/
+        // https://codepen.io/yigith/pen/NWGxGXg
+        var cropper = null;
+
+        $("#file-input").change(function () {
+            readFile(this);
+
+            if (this.files && this.files[0]) {
+                $("#btnUpload").removeAttr("disabled");
+            }
+            else {
+                $("#btnUpload").attr("disabled", "disabled");
+                if (cropper) {
+                    cropper.croppie('destroy');
+                    cropper = null;
+                }
+            }
+        });
+
+        function readFile(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    if(cropper == null)
+                        cropper = $('.cropper').croppie({
+                            enableOrientation: true,
+                            viewport: { width: 150, height: 150, type: 'square' }
+                        });
+
+                    cropper.croppie('bind', {
+                        url: e.target.result
+                    });
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        $('#modalChangePhoto').on('hidden.bs.modal', function (e) {
+            $("#file-input").val(null);
+            $(".custom-file-label").text("Choose file");
+            $("#btnUpload").attr("disabled", "disabled");
+
+            if (cropper) {
+                cropper.croppie('destroy');
+                cropper = null;
+            }
+        });
+
+        $("#btnUpload").click(function () {
+
+            if (!cropper) {
+                return;
+            }
+
+            cropper.croppie('result', {
+                type: "base64",
+                size: { width: 400, height: 400 }
+            }).then(function (base64) {
+                $.post("@Url.Action("UploadProfilePhoto")", { photoBase64: base64 }, function (data) {
+                    $("#profilePhoto").attr('src', data.photoUrl);
+                    $("#modalChangePhoto").modal('hide');
+                })
+
+            });
+
+        });
+
+        $("#btnDeletePhoto").click(function () {
+
+            $.post("@Url.Action("DeleteProfilePhoto")", function (data) {
+                $("#profilePhoto").attr('src', data.photoUrl);
+            });
+
+        });
+    </script>
+    
+}

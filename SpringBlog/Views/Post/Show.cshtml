@@ -1,0 +1,148 @@
+﻿@*https://startbootstrap.com/templates/blog-post/*@
+@model ShowPostViewModel
+@{
+    ViewBag.Title = Model.Post.Title;
+}
+
+    <div>
+        <!-- Title -->
+        <h1 class="mt-1">@Model.Post.Title</h1>
+
+        <!-- Author -->
+        <p class="lead">
+            by
+            <a href="#">@Model.Post.Author.DisplayName</a>
+        </p>
+
+        <hr />
+
+        <!-- Date/Time -->
+        <p>Posted on @Model.Post.CreationTime.Value.ToLongDateString()</p>
+
+        <hr />
+
+        <!-- Preview Image -->
+        @if (!string.IsNullOrEmpty(Model.Post.PhotoPath))
+        {
+            <img src="@Url.FeaturedImage(Model.Post.PhotoPath)" alt="Post Featured Image" class="img-fluid rounded" />
+            <hr />
+        }
+
+        <!-- Post Content -->
+        @Html.Raw(Model.Post.Content)
+
+        <hr />
+
+        <!-- Comments Form -->
+        <div class="card my-4" id="leave-a-comment">
+            <h5 class="card-header">Leave a Comment:</h5>
+            <div class="card-body">
+                @if (Request.QueryString["commentSuccess"] == "True")
+                {
+                    <div class="alert alert-success">
+                        Your comment has been received succesfully.
+                    </div>
+                }
+
+                @if (Request.IsAuthenticated)
+                {
+                    @Html.Partial("_CommentFormPartial", Model.CommentViewModel)
+                }
+                else
+                {
+                    <p class="text-center mt-3">
+                        Please
+                        @Html.ActionLink("log in", "Login", "Account", new { returnUrl = Request.Url.AbsolutePath }, null)
+                        or
+                        @Html.ActionLink("register", "Register", "Account")
+                        to leave a comment.
+
+                    </p>
+                }
+            </div>
+        </div>
+
+        <!-- Comments -->
+        <div id="comments">
+            @foreach (var comment in Model.Post.Comments
+           .Where(x => x.State == CommentState.Approved && x.ParentId == null)
+           .OrderByDescending(x => x.CreationTime))
+            {
+                <!-- Single Comment -->
+                <div class="media mb-4">
+                    <img class="d-flex mr-3 rounded-circle" src="@Url.ProfilePhoto(comment.Author.ProfilePhoto)" alt="" width="50" height="50">
+                    <div class="media-body">
+                        <h5 class="mt-0">@comment.Author.DisplayName</h5>
+                        @comment.Content <br />
+
+                        @if (Request.IsAuthenticated)
+                        {
+                            <a href="#" class="reply-button small" data-comment-id="@comment.Id">Reply</a>
+                        }
+                        else
+                        {
+                            @Html.ActionLink("Reply", "Login", "Account", new { returnUrl = Request.Url.AbsolutePath }, new { @class = "small" })
+                        }
+
+                        <div class="reply-form-wrapper"></div>
+
+                        <div class="mt-1">
+                            @foreach (var subcomment in comment.Children
+                           .Where(x => x.State == CommentState.Approved)
+                           .OrderBy(x => x.CreationTime))
+                            {
+                                <!-- Single Comment -->
+                                <div class="media mb-4">
+                                    <img class="d-flex mr-3 rounded-circle" src="@Url.ProfilePhoto(subcomment.Author.ProfilePhoto)" alt="" width="50" height="50">
+                                    <div class="media-body">
+                                        <h5 class="mt-0">@subcomment.Author.DisplayName</h5>
+                                        @subcomment.Content
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+    </div>
+
+@section scripts {
+    <script>
+        setTimeout(function () {
+            if (location.hash == "#leave-a-comment") {
+                window.scrollTo(0, $("#leave-a-comment").offset().top - 65);
+            }
+        }, 50);
+
+        setTimeout(function () {
+            if (location.hash == "#comments") {
+                window.scrollTo(0, $("#comments").offset().top - 65);
+            }
+        }, 50);
+
+        $(".reply-button").click(function (event) {
+            event.preventDefault();
+
+            // zaten tıklanmışsa kapat
+            if ($(this).next(".reply-form-wrapper").html()) {
+                $(this).next(".reply-form-wrapper").html("");
+                return;
+            }
+
+            var commentId = $(this).data("comment-id");
+            var frm = $("#leave-a-comment form").clone();
+
+            // change style of the clone
+            frm.addClass("d-flex justify-content-end");
+            frm.find(".form-group").addClass("flex-fill mb-0");
+            frm.find("button").addClass("btn-sm align-self-end ml-1");
+            frm.find("textarea").attr("rows", "2");
+
+            frm.find("#ParentId").val(commentId);
+            $(".reply-form-wrapper").html("");
+            $(this).next(".reply-form-wrapper").html(frm);
+        });
+    </script>
+}

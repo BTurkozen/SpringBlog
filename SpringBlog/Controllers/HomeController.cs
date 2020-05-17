@@ -1,19 +1,53 @@
-﻿using SpringBlog.ViewModels;
+﻿using SpringBlog.Helpers;
+using SpringBlog.Models;
+using SpringBlog.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using X.PagedList;
 
 namespace SpringBlog.Controllers
 {
     public class HomeController : BaseController
     {
-        public ActionResult Index()
+        [Route("", Order = 2, Name = "HomeDefault")]
+        [Route("c/{cid}/{slug}", Order = 1)]
+        public ActionResult Index(string q, int? cid, string slug, int page = 1)
         {
-            var vm = new HomeIndexViewModels
+            var pageSize = 10;
+
+            IQueryable<Post> posts = db.Posts;
+            Category category = null;
+
+            if (q != null)
             {
-                Posts = db.Posts.OrderByDescending(x => x.CreateTime).ToList()
+                posts = posts.Where(x => x.Category.CategoryName.Contains(q)
+                                        || x.Title.Contains(q)
+                                        || x.Content.Contains(q));
+            }
+
+            if (cid != null && q == null)
+            {
+                category = db.Categories.Find(cid);
+
+                if (category == null)
+                {
+                    return HttpNotFound();
+                }
+
+                posts = posts.Where(x => x.CategoryId == cid);
+            }
+
+            var vm = new HomeIndexViewModel
+            {
+                Posts = posts.OrderByDescending(x => x.CreationTime).ToPagedList(page, pageSize),
+                Category = category,
+                SearchTerm = q,
+                CategoryId = cid
             };
 
             return View(vm);

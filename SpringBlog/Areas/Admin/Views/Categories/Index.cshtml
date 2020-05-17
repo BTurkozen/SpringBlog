@@ -5,7 +5,7 @@
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">DataTable with default features</h3>
+        <h3 class="card-title">Manage Categories</h3>
     </div>
     <!-- /.card-header -->
     <div class="card-body">
@@ -23,7 +23,14 @@
                     <tr>
                         <td>@item.Id</td>
                         <td>@item.CategoryName</td>
-                        <td>Delete || Edit</td>
+                        <td>
+                            <a href="@Url.Action("Edit", new { id = item.Id })" class="btn btn-info">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="btn btn-danger" data-delete-id="@item.Id" data-delete-name="@item.CategoryName" data-delete-action="@Url.Action("Delete")">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -32,3 +39,5 @@
     <!-- /.card-body -->
 </div>
 <!-- /.card -->
+
+@Html.Partial("_DeleteModalPartial")
